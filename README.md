@@ -6,10 +6,12 @@
 
 **FIAP Enterprise Challenge 2026 · GoodWe Energy Innovation Lab — Unidade Aclimação**
 
-![Sprint](https://img.shields.io/badge/Sprint-01%20%E2%80%94%20Pesquisa%20%26%20Documenta%C3%A7%C3%A3o-1e293b)
-![Status](https://img.shields.io/badge/Status-Entregue-2e7d32)
-![Prazo](https://img.shields.io/badge/Prazo-21%2F06%2F2026-475569)
-![Licença](https://img.shields.io/badge/Uso-Acad%C3%AAmico-64748b)
+![Sprint 01](https://img.shields.io/badge/Sprint_01-Concluída-2e7d32)
+![Sprint 02](https://img.shields.io/badge/Sprint_02-Entregue-2e7d32)
+![Python](https://img.shields.io/badge/Python-3.11-3b82f6)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110-06b6d4)
+![SQLite](https://img.shields.io/badge/DB-SQLite_(protótipo)-475569)
+![scikit-learn](https://img.shields.io/badge/IA-scikit--learn_%2B_statsmodels-7c3aed)
 
 </div>
 
@@ -23,54 +25,50 @@
 
 **Repositório:** [github.com/PedroSales-dev/Challenge-GOODWE](https://github.com/PedroSales-dev/Challenge-GOODWE)
 
-> Entregável da **Sprint 01** do EV Challenge 2026 (FIAP + GoodWe). Reúne a pesquisa das três frentes exigidas, a arquitetura proposta, o modelo de rateio, o papel da IA e o plano da Sprint 02. Sem código de produção nesta etapa — o objetivo é fixar as decisões que vão guiar o desenvolvimento.
-
 ---
 
 ## Sumário
 
 1. [Contexto do Desafio](#1-contexto-do-desafio)
 2. [Visão de Produto — EV ChargeOps](#2-visão-de-produto--ev-chargeops)
-3. [Frente 1 — Contexto e Problema](#3-frente-1--contexto-e-problema)
-4. [Frente 2 — Base Regulatória e Técnica](#4-frente-2--base-regulatória-e-técnica)
-5. [Frente 3 — Arquitetura e IA](#5-frente-3--arquitetura-e-ia)
-6. [Plano para a Sprint 02](#6-plano-para-a-sprint-02)
-7. [Riscos, Premissas e Limites de Escopo](#7-riscos-premissas-e-limites-de-escopo)
-8. [Stack Tecnológica Resumida](#8-stack-tecnológica-resumida)
-9. [Estrutura do Repositório](#9-estrutura-do-repositório)
-10. [Referências](#10-referências)
+3. [Sprint 01 — Pesquisa e Documentação](#3-sprint-01--pesquisa-e-documentação)
+   - 3.1 [Frente 1 — Contexto e Problema](#31-frente-1--contexto-e-problema)
+   - 3.2 [Frente 2 — Base Regulatória e Técnica](#32-frente-2--base-regulatória-e-técnica)
+   - 3.3 [Frente 3 — Arquitetura e IA](#33-frente-3--arquitetura-e-ia)
+4. [Sprint 02 — Protótipo Funcional](#4-sprint-02--protótipo-funcional)
+   - 4.1 [Como executar](#41-como-executar)
+   - 4.2 [Estrutura do repositório](#42-estrutura-do-repositório)
+   - 4.3 [Lógica central — Motor RHPS](#43-lógica-central--motor-rhps)
+   - 4.4 [Módulo de IA — Aura](#44-módulo-de-ia--aura)
+   - 4.5 [API REST — FastAPI](#45-api-rest--fastapi)
+   - 4.6 [Dashboard — Frontend](#46-dashboard--frontend)
+   - 4.7 [Evidências de funcionamento](#47-evidências-de-funcionamento)
+   - 4.8 [Desvios em relação à Sprint 01](#48-desvios-em-relação-à-sprint-01)
+5. [Referências](#5-referências)
 
 ---
 
 ## 1. Contexto do Desafio
 
-A GoodWe mantém, no Brasil, uma parceria com a FIAP através do **Energy Innovation Lab** (Unidade Aclimação), onde um carregador **GoodWe HCA G2** opera no estacionamento L1. Esse equipamento é o ponto de partida físico de um problema operacional concreto: **infraestruturas de recarga compartilhada — condomínios, edifícios corporativos, campus — não registram, de forma estruturada, quem carregou, quanto consumiu e quanto deve pagar.**
+A GoodWe mantém, no Brasil, uma parceria com a FIAP através do **Energy Innovation Lab** (Unidade Aclimação), onde um carregador **GoodWe HCA G2** opera no estacionamento L1. O problema operacional concreto: **infraestruturas de recarga compartilhada — condomínios, edifícios corporativos, campus — não registram, de forma estruturada, quem carregou, quanto consumiu e quanto deve pagar.**
 
-O problema é urgente porque o mercado cresceu rápido. Segundo a ABVE, o Brasil vendeu **223.912 veículos eletrificados em 2025**, alta de **26% sobre 2024** (177.358 unidades) — dez vezes o ritmo de crescimento do mercado automotivo total no período. A frota acumulada (2012–jan/2026) chega a **645.407 veículos**, com São Paulo concentrando 181.305 unidades. Em 2025, **81% dos eletrificados vendidos (181.542) eram plug-in** (BEV + PHEV): veículos que dependem de um ponto de recarga, cada vez mais a garagem de casa ou do trabalho, não um eletroposto público.
-
-Esse volume de plug-in caindo sobre garagens coletivas é o que transforma recarga compartilhada de comodidade em problema de gestão: um único ponto de conexão, vários veículos, nenhum mecanismo nativo para dizer quem paga o quê. É esse vácuo de orquestração — não a tecnologia de carregamento em si, que já é madura — que o **EV ChargeOps** ataca.
+O mercado torna o problema urgente. A ABVE registrou **223.912 veículos eletrificados vendidos em 2025** (+26% sobre 2024), com 81% sendo plug-in. A frota acumulada chega a 645.407 unidades, com São Paulo concentrando 181.305 veículos. Esse volume caindo sobre garagens coletivas — sem nenhum mecanismo nativo de rateio — é o que o EV ChargeOps resolve.
 
 ---
 
 ## 2. Visão de Produto — EV ChargeOps
 
-**EV ChargeOps** é a camada de software entre o hardware de recarga (GoodWe HCA G2 e equipamentos compatíveis) e quem depende dele para operar ou usar a infraestrutura — síndicos, administradoras, gestores de estacionamento corporativo, motoristas. Em uma frase: **transforma o evento físico "alguém plugou um carro" em consumo auditável, fatura individual justa e decisão operacional baseada em dados.**
+**EV ChargeOps** é a camada de software entre o hardware de recarga (GoodWe HCA G2) e quem depende dele para operar ou usar a infraestrutura. Em uma frase: **transforma o evento físico "alguém plugou um carro" em consumo auditável, fatura individual justa e decisão operacional baseada em dados.**
 
-O produto não compete com hardware nem com infraestrutura de pagamento de eletropostos comerciais — esse é o território da ChargeGrid Intelligence, descrita no playbook do desafio para o cenário de varejo. O EV ChargeOps ocupa o nicho **condominial e corporativo de uso compartilhado e não comercial**, onde o desafio não é cobrar o usuário final em tempo real, mas **ratear de forma justa um custo de energia entre vizinhos ou colegas de trabalho**.
-
-### Proposta de valor
-
-- **Gestor** — troca a discussão subjetiva sobre "quem usa a energia comum" por dados objetivos: fatura automática e relatório mensal em linguagem natural.
-- **Morador/colaborador** — paga exatamente pelo que consumiu, com histórico de sessões e previsão de custo.
-- **Operação** — antecipa picos de demanda e sinaliza anomalias antes que virem reclamação, autuação ou processo judicial entre condôminos — risco real, como mostra a Frente 2.
+O produto ocupa o nicho **condominial e corporativo compartilhado** — não compete com plataformas de cobrança de eletropostos comerciais. O diferencial está na combinação de três características que nenhuma solução mapeada oferece em conjunto: (1) agnóstica de hardware via protocolos abertos (OCPP/Modbus), (2) rateio condominial como problema de primeira classe e (3) IA com função estrutural no fluxo, não decorativa.
 
 ---
 
-## 3. Frente 1 — Contexto e Problema
+## 3. Sprint 01 — Pesquisa e Documentação
 
-### 3.1 Infraestruturas de recarga compartilhada e seus desafios operacionais
+### 3.1 Frente 1 — Contexto e Problema
 
-Infraestrutura de recarga compartilhada é qualquer instalação cujo uso não é exclusivo de um único titular de unidade consumidora. Três cenários, três dinâmicas:
+Uma infraestrutura de recarga compartilhada é qualquer instalação cujo uso não é exclusivo de um único titular de unidade consumidora. Três cenários, três dinâmicas:
 
 | Cenário | Quem compartilha | Fricção dominante |
 |---|---|---|
@@ -78,205 +76,95 @@ Infraestrutura de recarga compartilhada é qualquer instalação cujo uso não �
 | Edifício corporativo | Colaboradores e visitantes | Política de benefício/reembolso; priorização de vagas |
 | Campus/laboratório | Alunos, pesquisadores, parceiros | Acesso temporário sem unidade fixa; auditoria por sessão |
 
-O desafio comum aos três é a falta de **registro por usuário** no nível da sessão. Um circuito que alimenta um carregador comum não distingue, por si só, o consumo do morador do bloco A do consumo do morador do bloco B. Sem essa distinção, sobram soluções manuais e falíveis: rodízio informal, planilha do zelador, ou — o caso mais comum em condomínios brasileiros hoje — diluir o custo da garagem na taxa condominial geral, penalizando quem não tem VE e subsidiando quem tem.
+**Anatomia de uma sessão de recarga.** Uma sessão AC no HCA G2 segue o IEC 61851-1 (modo 3) e, sob gestão remota, o OCPP: (1) disponibilidade, (2) identificação por RFID/app — que vincula a sessão a uma identidade —, (3) conexão física, (4) `StartTransaction` com timestamp e leitura inicial do medidor, (5) `MeterValues` periódicos, (6) `StopTransaction` com leitura final. A diferença entre leitura final e inicial é o **kWh líquido entregue**, o dado primário de qualquer rateio.
 
-A isso se soma uma fricção regulatória nova: a insegurança jurídica sobre **segurança contra incêndio** em garagens com carregadores (detalhada na Frente 2) tem travado decisões de síndicos justamente quando a demanda por recarga residencial mais cresce.
+**Modelos de negócio mapeados:**
 
-### 3.2 Anatomia técnica de uma sessão de recarga
+| Modelo | Onde se aplica bem | Limitação |
+|---|---|---|
+| Recarga gratuita | Adesão baixa; benefício de retenção corporativa | Não escala com a frota |
+| Cobrança por kWh | Modelo mais justo; base do EV ChargeOps | Exige medição confiável |
+| Cobrança por tempo | Eletropostos de giro rápido | Penaliza carga lenta; insatisfação recorrente |
+| Assinatura mensal | Frotas corporativas previsíveis | Injusta em uso heterogêneo |
+| Rateio diluído na taxa | Condomínios sem carregadores inteligentes | Gera o conflito que este produto resolve |
 
-Uma sessão de recarga AC no HCA G2 segue uma sequência de eventos alinhada ao IEC 61851-1 (modo de carga 3) e, sob gestão remota, ao OCPP (Open Charge Point Protocol):
-
-1. **Disponibilidade** — carregador energizado e em repouso, emitindo status (`StatusNotification`: *Available*).
-2. **Identificação do usuário** — autenticação por cartão RFID, app (SolarGo/SEMS+) ou autostart por conexão do plugue. Este é o evento que **vincula a sessão a uma identidade**, pré-requisito de qualquer rateio justo.
-3. **Conexão física** — veículo plugado (conector Type 2); o carregador negocia a corrente máxima com o módulo de carga embarcado.
-4. **Início da transação** — energização liberada (`StartTransaction`), com timestamp e leitura inicial do medidor.
-5. **Telemetria contínua** — leituras periódicas de potência (kW), energia acumulada (kWh) e alertas (sobrecorrente, sobretemperatura, falha de comunicação) — equivalente a `MeterValues`.
-6. **Encerramento** — por decisão do usuário, carga completa ou desconexão do plugue; leitura final do medidor (`StopTransaction`).
-7. **Consolidação** — a diferença entre leitura final e inicial é o **kWh líquido entregue**: o dado primário de qualquer rateio.
-
-Esses dados chegam por dois canais complementares: localmente, via **RS-485/Modbus**, lendo registradores do carregador ou de um medidor MID adicional; remotamente, via **API GoodWe SEMS**, já tratados como dados de negócio (Frente 2). Essa dualidade — limite físico + nuvem — sustenta a camada de conectividade da arquitetura (Frente 3).
-
-### 3.3 Modelos de negócio para recarga compartilhada
-
-| Modelo | Como funciona | Onde se aplica bem | Limitação principal |
-|---|---|---|---|
-| **Recarga gratuita** | Custo absorvido pela operação | Baixa adesão de VEs; benefício de retenção corporativa | Não escala; gera disputa quando a adesão cresce |
-| **Cobrança por kWh** | Tarifa sobre energia medida no equipamento | Modelo mais justo tecnicamente | Exige medição confiável e, às vezes, credenciamento metrológico |
-| **Cobrança por tempo de conexão** | Tarifa por minuto de uso | Eletropostos de giro rápido, onde a vaga é o ativo escasso | Penaliza carga lenta; é a modalidade mais criticada por usuários — eletropostos comerciais cobrando por minuto independentemente da potência entregue geram reclamação recorrente |
-| **Assinatura mensal fixa** | Valor fixo, com ou sem teto de uso | Frotas corporativas previsíveis | Injusta em uso heterogêneo (uso diário vs. mensal) |
-| **Rateio diluído na taxa comum** | Custo da garagem embutido na taxa condominial geral | Transição, sem carregadores inteligentes | É o modelo que gera a injustiça percebida que motiva este desafio |
-
-Premissa de design do EV ChargeOps: **a única base tecnicamente defensável e socialmente aceitável para recarga compartilhada residencial é a cobrança por kWh efetivamente consumido**, somada a um componente fixo de manutenção rateado por critério condominial já existente (fração ideal). O modelo completo está na Frente 3.
-
-### 3.4 Aprofundamento escolhido — Opção A: Análise de Mercado
-
-A pesquisa combina as referências sugeridas no playbook (Zaptec, Wallbox Pulsar Plus, ChargePoint, Neocharge, Copel Telecom EV) com duas soluções **brasileiras desenhadas para condomínio** (Power2Go, WEG WEMOB), mais comparáveis ao escopo do EV ChargeOps do que players globais de uso doméstico unifamiliar.
-
-| Solução | Problema que resolve | Funcionalidades principais | Modelo de negócio | Limitações |
-|---|---|---|---|---|
-| **Zaptec** (Noruega) | Balanceamento dinâmico de carga em circuito limitado | Algoritmo proprietário de balanceamento de fases; dezenas de carregadores em um circuito de baixa amperagem | Hardware próprio + plataforma de gestão | Ecossistema fechado; integração com carregadores de terceiros (como o HCA G2) não é nativa |
-| **Wallbox Pulsar Plus** | Carregamento inteligente residencial unifamiliar | App myWallbox, agendamento por tarifa, compartilhamento entre duas unidades Pulsar | Hardware + app gratuito | Pensado para uma garagem por contrato; não resolve rateio entre unidades distintas |
-| **ChargePoint** | Operação de redes de recarga em escala | Gestão de frota e rede, histórico detalhado por sessão | Hardware + assinatura de rede | Cada unidade exige circuito dedicado; presença reduzida no Brasil |
-| **Neocharge** | Múltiplos carregadores em circuito subdimensionado | "Smart Splitter" (hardware) + app de monitoramento | Venda de splitter + app freemium | Resolve viabilidade elétrica, não rateio financeiro entre titulares |
-| **Copel Telecom EV** (eletropostos) | Recarga comercial cobrada por tempo de uso | Eletropostos com cobrança via app/cartão | Exploração comercial direta (tarifa por minuto) | Cobrança por tempo gera insatisfação quando a potência varia; não trata rateio coletivo |
-| **Power2Go** (Brasil) | Rateio de energia em carregador compartilhado de condomínio | Mede consumo por carregador e envia ao síndico (Power2Go Direct) ou cobra direto o morador (Power2Go Pay) | Taxa de gestão sobre o serviço | Concorrente mais próximo; depende de OCPP no carregador; sem IA preditiva ou de anomalias |
-| **WEG WEMOB** (Brasil) | Estação de recarga proprietária com rateio e cobrança integrados | Hardware homologado Inmetro + app WEMOB EV Drivers | Hardware WEG + plataforma própria | Verticalizado ao próprio hardware; não orquestra carregadores de terceiros |
-
-**Lacuna de mercado.** Nenhuma solução combina as três características que o EV ChargeOps propõe juntas: (1) **agnóstica de hardware** o suficiente para operar sobre o ecossistema GoodWe via protocolos abertos (OCPP/Modbus); (2) trata **rateio condominial** como problema central, não subproduto de uma plataforma de cobrança comercial; (3) usa **IA preditiva e analítica** como núcleo do produto, não como recurso acessório. Hardware aberto + rateio justo + IA como motor de decisão: esse é o espaço livre.
+**Análise de mercado (Opção A).** Seis soluções mapeadas: Zaptec, Wallbox Pulsar Plus, ChargePoint, Neocharge, Power2Go e WEG WEMOB. Nenhuma combina simultaneamente: (1) agnóstica de hardware para o ecossistema GoodWe via OCPP/Modbus, (2) rateio condominial como problema central e (3) IA preditiva e analítica no núcleo — esse é o espaço do EV ChargeOps.
 
 ---
 
-## 4. Frente 2 — Base Regulatória e Técnica
+### 3.2 Frente 2 — Base Regulatória e Técnica
 
-### 4.1 Resolução Normativa ANEEL nº 1.000/2021
+**REN ANEEL nº 1.000/2021.** Três pilares para a viabilidade legal do EV ChargeOps: (1) exploração comercial livre — condomínio pode cobrar morador sem outorga específica; (2) comunicação prévia à distribuidora em alterações de carga — responsabilidade da instalação física; (3) **protocolos abertos obrigatórios** para equipamentos não exclusivos de uso privado — fundamento legal, não apenas técnico, para adoção de OCPP.
 
-Em vigor desde dezembro de 2021, a REN 1.000/2021 consolidou mais de 60 resoluções anteriores, entre elas a REN 414/2010 e a REN 819/2018 (recarga de VEs). O **Capítulo V** trata diretamente de instalações de recarga e sustenta três pilares da viabilidade legal do EV ChargeOps:
+**GoodWe HCA G2 — interfaces de comunicação:**
 
-- **Exploração comercial livre.** A recarga de veículo de terceiro é permitida, inclusive para exploração comercial a preços livremente negociados. Um condomínio pode cobrar legalmente um morador pelo uso compartilhado de um carregador, sem outorga específica da ANEEL — o rateio da Frente 3 está amparado por essa permissão.
-- **Comunicação prévia à distribuidora.** Instalação que altere carga ou tensão relevante deve ser comunicada previamente, no pedido de ligação ou análise de projeto. Obrigação da instalação física, não do software — mas o EV ChargeOps mantém esse registro disponível para auditoria do gestor.
-- **Protocolos abertos obrigatórios.** Equipamentos não exclusivos de uso privado — o caso de um carregador compartilhado — precisam de protocolo aberto de domínio público para supervisão e controle remoto. Essa exigência é a base legal, não apenas técnica, para adotar **OCPP** como protocolo de conectividade na Frente 3.
+| Interface | Uso no EV ChargeOps |
+|---|---|
+| RS-485 / Modbus (×2) | Leitura de potência/energia em baixa latência; redundância local |
+| LAN (Ethernet) | Canal principal do gateway OCPP em produção |
+| Wi-Fi | Instalação e fallback |
+| Bluetooth | Pareamento inicial com o app SolarGo/SEMS+ |
+| RFID (leitor integrado) | Vínculo identidade–sessão — pré-requisito do rateio |
 
-A norma também veda a injeção de energia do veículo para a rede (sem V2G amplo), permitindo fluxo bidirecional apenas restrito à mesma unidade consumidora — relevante caso o roadmap futuro considere *vehicle-to-home*.
+**API GoodWe SEMS (OpenAPI).** Autenticação via `CrossLogin`; endpoints `GetMonitorDetailByPowerstationId` e família device entregam potência, energia e eventos de sessão já tratados. Payload típico: `{"status":"active","power":"11kW","timestamp":"2026-06-10T19:42:00Z"}`. No protótipo, a API é simulada por um gerador de dados sintéticos com o mesmo schema.
 
-### 4.2 Carregador GoodWe HCA G2 — interfaces de comunicação
-
-O HCA G2 vem em três potências (7 kW monofásico; 11 e 22 kW trifásico), conector Type 2, cabo de 7,5 m, IP66 e disjuntor residual combinado de 30 mA AC + 6 mA DC. Suas cinco interfaces de comunicação têm papéis distintos na arquitetura:
-
-| Interface | Função técnica | Uso no EV ChargeOps |
-|---|---|---|
-| **RS-485 (×2, Modbus)** | Comunicação serial industrial de baixa latência | Canal primário de leitura de potência/energia, alimenta motor de rateio e detecção de anomalias |
-| **LAN (Ethernet)** | Conectividade IP cabeada e estável | Canal recomendado para o gateway OCPP em produção |
-| **Wi-Fi** | Conectividade IP sem fio | Canal de instalação e fallback |
-| **Bluetooth** | Conectividade de curto alcance | Pareamento inicial com o app SolarGo/SEMS+ na instalação |
-| **RFID (leitor integrado)** | Identificação física por aproximação | Mecanismo central de **vínculo identidade–sessão**; sem ele, não há como atribuir consumo a uma unidade |
-
-### 4.3 API GoodWe (SEMS Portal)
-
-A GoodWe expõe três tipos de API:
-
-1. **OpenAPI** — contas organizacionais SEMS; acesso completo aos dispositivos da organização, consulta de dados de negócio e controle remoto. Organizada em quatro famílias: planta, dispositivo, controle remoto, datalogger.
-2. **Real-time Data Monitoring API** — para terceiros que precisam de dados brutos em tempo real, sem cadastrar a planta no SEMS: o terceiro registra os equipamentos em whitelist e obtém autorização do usuário final.
-3. **Batch Remote Control Interface** — comandos a múltiplos equipamentos simultaneamente (sem atualização de firmware).
-
-A autenticação segue o padrão `CrossLogin` (`POST /api/v1/Common/CrossLogin`), que devolve um token usado nas chamadas seguintes — por exemplo, `GetMonitorDetailByPowerstationId`. Payload típico de evento, simplificado:
-
-```json
-{
-  "status": "active",
-  "power": "11kW",
-  "timestamp": "2026-05-23T10:15:00Z"
-}
-```
-
-Para o EV ChargeOps, a **OpenAPI** é o serviço de referência: entrega potência, energia e eventos de sessão já tratados, sem exigir parsing de registradores Modbus brutos. O backend trata a API GoodWe como fonte de verdade da telemetria; o canal RS-485/Modbus local funciona como redundância de menor latência para a detecção de anomalias.
-
-### 4.4 Aprofundamento escolhido — Opção A: Mapeamento Regulatório Completo (São Paulo)
-
-Além da REN 1.000/2021, há um movimento regulatório estadual em curso em São Paulo, ativo no exato período desta sprint:
-
-**Lei estadual nº 18.403/2026.** Assegura ao condômino o direito de instalar, às próprias expensas, uma estação de recarga individual em sua vaga privativa, condicionado a normas técnicas e de segurança vigentes. Antes da lei, a decisão dependia da convenção do condomínio e de assembleia, com jurisprudência majoritariamente desfavorável ao morador. A lei não dispensa aprovação técnica, mas retira do síndico o veto arbitrário.
-
-**Portarias do Corpo de Bombeiros de SP (CCB-008/800/2025 e CCB-009/800/2025, nov/2025).** Em resposta ao debate sobre risco de incêndio em garagens com VEs — que paralisou decisões de incorporadoras em 2024–2025 —, o Corpo de Bombeiros colocou em consulta pública a revisão da **IT-41**, com exigências para **Sistemas de Alimentação de Veículos Elétricos (SAVE)**, alinhadas à Diretriz Nacional da LIGABOM:
-
-- Instalação por responsável técnico com ART, seguindo **NBR 5410**, **NBR 17019** e **NBR IEC 61851-1**, com estudo de curva de carga;
-- Em áreas internas, apenas **modos de recarga 3 e 4** (AC tipo wallbox e DC) — valida diretamente o HCA G2 (modo 3) como equipamento compatível;
-- Circuito exclusivo por ponto de recarga, com disjuntor, DR e DPS dedicados; proibidas tomadas comuns, extensões ou adaptadores;
-- Chaves de desligamento de emergência e sinalização fotoluminescente padronizada;
-- Proibida conexão direta ao padrão de entrada; afastamento mínimo de proteção contra impacto de veículos.
-
-**Conformidade do EV ChargeOps.** Essas exigências são de instalação elétrica física, fora do escopo de software. O EV ChargeOps contribui em dois pontos: (a) registra metadados de conformidade por ponto de recarga (data da ART, responsável técnico, norma de referência), auditáveis em vistoria; (b) sua camada de conectividade, por depender de OCPP e Modbus, já atende nativamente à exigência de protocolo aberto da REN 1.000/2021. Não há incompatibilidade entre a arquitetura proposta e o cenário regulatório paulista — pelo contrário: o foco do produto em registro por sessão e auditabilidade é diferencial competitivo justamente agora, com documentação técnica virando pré-condição de aprovação.
+**Mapeamento regulatório São Paulo (Opção A).** Dois achados relevantes além da REN 1.000/2021:
+- **Lei estadual SP 18.403/2026** — assegura ao condômino o direito de instalar estação de recarga individual na vaga privativa, retirando o veto arbitrário do síndico.
+- **Portarias CCB-008/800/2025 e CCB-009/800/2025** (nov/2025) — revisão da IT-41, com exigências para SAVE (Sistemas de Alimentação de Veículos Elétricos): instalação por responsável técnico com ART (NBR 5410 / 17019 / IEC 61851-1), apenas modos 3 e 4 em áreas internas, circuito exclusivo por ponto. O HCA G2 (modo 3) é compatível. O EV ChargeOps responde registrando os metadados de conformidade como campo auditável no cadastro de cada ponto.
 
 ---
 
-## 5. Frente 3 — Arquitetura e IA
+### 3.3 Frente 3 — Arquitetura e IA
 
-### 5.1 Camadas da plataforma
+**Diagrama de arquitetura em camadas:**
 
-Quatro camadas, ilustradas no diagrama abaixo (`docs/diagrams/arquitetura-evchargeops.svg`):
+![Diagrama de Arquitetura](docs/diagrams/arquitetura-evchargeops.svg)
 
-![Diagrama de Arquitetura do EV ChargeOps](docs/diagrams/arquitetura-evchargeops.svg)
-
-| Camada | Responsabilidade | Componentes-chave |
+| Camada | Responsabilidade | Componentes |
 |---|---|---|
-| **Física** | Conversão de energia e captura do evento bruto | GoodWe HCA G2, leitor RFID, medidor MID opcional, proteções elétricas |
-| **Conectividade** | Transporte do evento até a aplicação | OCPP 1.6/2.0.1 (WebSocket/JSON), Modbus TCP, rede local/Internet |
-| **Aplicação** | Regras de negócio, persistência, rateio e IA | API de domínio (FastAPI), Motor de Rateio (RHPS), Aura (IA), Gateway de integração |
-| **Apresentação** | Interfaces humanas | Painel do gestor, app do morador, Boletim Energético Inteligente |
+| Física | Conversão de energia e captura do evento bruto | GoodWe HCA G2, RFID, proteções elétricas |
+| Conectividade | Transporte até a aplicação | OCPP 1.6/2.0.1 (WebSocket/JSON), Modbus TCP |
+| Aplicação | Regras de negócio, rateio e IA | FastAPI, Motor RHPS, Aura, Gateway GoodWe SEMS |
+| Apresentação | Interfaces humanas | Painel gestor, app morador, Boletim Energético |
 
-A divisão em camadas — e não um monólito — permite que, na Sprint 02, o **carregador físico do Lab FIAP** entre via dados reais da API GoodWe enquanto o restante evolui sobre dados simulados, sem acoplar fonte de dados e lógica de negócio.
-
-### 5.2 Fluxo de dados — da sessão de recarga à fatura
+**Fluxo de dados:**
 
 ```mermaid
 flowchart TD
-    A["Motorista identifica-se<br/>RFID / App"] --> B["HCA G2 inicia sessão<br/>StartTransaction"]
-    B --> C["Telemetria periódica<br/>MeterValues (Modbus / OCPP)"]
-    C --> D["Gateway de Integração<br/>coleta via API GoodWe SEMS"]
-    D --> E["Persistência do Evento de Sessão<br/>PostgreSQL"]
-    E --> F["Encerramento da sessão<br/>StopTransaction"]
-    F --> G["Motor de Rateio (RHPS)<br/>calcula kWh líquido por unidade"]
-    G --> H["AURA — Detecção de Anomalias<br/>valida consistência da leitura"]
-    H -->|"sem anomalia"| I["Consolidação na Fatura Mensal"]
-    H -->|"anomalia detectada"| J["Sinalização ao Gestor<br/>auditoria manual"]
-    I --> K["Boletim Energético Inteligente<br/>resumo em linguagem natural"]
+    A["RFID / App<br/>Identifica usuário"] --> B["HCA G2<br/>StartTransaction"]
+    B --> C["MeterValues<br/>Modbus / OCPP"]
+    C --> D["Gateway<br/>API GoodWe SEMS"]
+    D --> E["PostgreSQL<br/>Evento de sessão"]
+    E --> F["StopTransaction<br/>Encerra sessão"]
+    F --> G["Motor RHPS<br/>kWh por unidade"]
+    G --> H["Aura<br/>Detecção de anomalias"]
+    H -->|"normal"| I["Fatura mensal"]
+    H -->|"anômala"| J["Sinalização<br/>ao gestor"]
+    I --> K["Boletim Energético<br/>linguagem natural"]
     J --> K
-    K --> L["Painel do Gestor / App do Morador"]
+    K --> L["Painel / App"]
 ```
 
-A IA entra em dois pontos: validação de consistência (antes da fatura fechar) e tradução final em linguagem acessível (depois). Não é camada decorativa — é parte do caminho crítico de garantia de qualidade do dado faturado.
-
-### 5.3 Modelo de rateio proposto — RHPS (Rateio Híbrido Proporcional por Sessão)
-
-A infraestrutura tem custo fixo (existir, estar disponível, ser mantida) e custo variável (energia consumida). O modelo combina os dois:
+**Modelo de rateio RHPS (Opção A + B):**
 
 ```
-Fatura_unidade(mês) = Componente_Variável + Componente_Fixo
+Fatura(unidade, mês) = Componente_Variável + Componente_Fixo
 
-Componente_Variável = Σ(kWh_sessão) × Tarifa_vigente × (1 + Fator_perda_interna)
-
-Componente_Fixo = Custo_manutenção_infraestrutura × Fração_ideal_unidade
+Componente_Variável = Σ(kWh_sessão) × R$0,6878/kWh × 1,03
+Componente_Fixo     = R$500/mês × fração_ideal_unidade
 ```
 
-**Variáveis:**
+Três casos excepcionais tratados: sessão interrompida (kWh parcial contabilizado, flag de auditoria), unidade sem recarga (fixo cobrado, variável zero), múltiplos cartões/veículos por unidade (consumo somado automaticamente, fatura única).
 
-| Variável | Origem do dado | Observação |
+**Módulo Aura — papel da IA (Opção B):**
+
+| Abordagem | Técnica | Problema resolvido |
 |---|---|---|
-| `kWh_sessão` | Diferença entre leitura final e inicial, por sessão, vinculada ao RFID/usuário | Soma todas as sessões de todos os RFIDs da mesma unidade no período |
-| `Tarifa_vigente` | Tarifa da distribuidora local, com bandeira tarifária do mês | Pode incorporar tarifa branca por horário no futuro |
-| `Fator_perda_interna` | Perdas técnicas estimadas na instalação interna (2–5%) | Parametrizável por instalação; calibrado na Sprint 02 com dados do Lab FIAP |
-| `Custo_manutenção_infraestrutura` | Custo fixo mensal definido em assembleia | Rateado pelo critério **já existente no condomínio** (fração ideal, art. 1.336 do Código Civil) — o produto não cria critério novo, aplica o que já existe |
+| Previsão de demanda | Holt-Winters (sazonalidade semanal) | Antecipar picos; sugerir horários de menor custo |
+| Detecção de anomalias | Isolation Forest (4 features) | Flaggear sessões suspeitas antes do faturamento |
+| Boletim energético | Geração por template (NLP) | Traduzir dados técnicos em linguagem natural para o gestor |
 
-**Casos excepcionais:**
-
-- **Sessão interrompida** (queda de energia, falha de comunicação, desconexão abrupta): a sessão fecha como "órfã" no último `MeterValues` válido, com flag de incerteza. O kWh parcial medido entra no rateio normalmente — nenhuma energia entregue deixa de ser contabilizada — mas a sessão fica marcada para auditoria se o valor divergir do padrão histórico da unidade (acionando a detecção de anomalias).
-- **Usuário sem recarga no mês** — componente variável zero; o componente fixo de manutenção é cobrado normalmente, pois a disponibilidade da infraestrutura beneficia todos, com ou sem uso — a mesma lógica do rateio de manutenção do elevador para quem mora no térreo.
-- **Duas unidades com dois veículos (ou uma unidade com dois)** — o rateio nunca é por vaga ou por carregador, é **por usuário identificado**, agregado à unidade vinculada no cadastro. O modelo de dados (Seção 5.5) suporta relação N:N entre usuários/cartões RFID e unidade; consumo de cartões distintos da mesma unidade soma automaticamente.
-
-### 5.4 Aprofundamento escolhido — Opção B: O Papel da IA na Solução
-
-A IA é tratada como **motor lógico**, não como funcionalidade cosmética. O módulo recebeu nome próprio: **Aura** (*Assistente para Uso e Rateio Automatizado*), com três abordagens:
-
-**1. Previsão de consumo e demanda (séries temporais).**
-- *Problema*: antecipar, por ponto e janela horária, a demanda agregada de potência, evitando que vários veículos carregando juntos excedam a demanda contratada.
-- *Técnica*: séries temporais (Prophet, ou *gradient boosting* sobre features de calendário) treinadas no histórico de sessões.
-- *Dados*: timestamp de início/fim, kWh, unidade, calendário (dia da semana, feriados), e dados meteorológicos quando houver geração solar.
-- *Impacto*: recomendação proativa de horário ao morador (custo menor em tarifa branca) e alerta ao gestor sobre revisão de demanda contratada — evita o disjuntor geral desarmando por sobrecarga não prevista.
-
-**2. Detecção de anomalias (aprendizado não supervisionado).**
-- *Problema*: identificar sessões cujo consumo, duração ou potência diverge do histórico — sinal de falha de medição, fraude (RFID emprestado/clonado) ou degradação do hardware.
-- *Técnica*: Isolation Forest (ou Z-score multivariado como baseline) sobre kWh, duração, potência média e horário.
-- *Dados*: histórico de sessões, com rótulo manual retroativo de casos já identificados pelo gestor.
-- *Impacto*: sinaliza a sessão suspeita antes de cobrar, não depois da reclamação.
-
-**3. Sumarização em linguagem natural.**
-- *Problema*: a maioria dos síndicos não tem formação técnica para interpretar um painel de métricas; a Aura traduz os números do mês em um parágrafo — o **Boletim Energético Inteligente**.
-- *Técnica*: geração de texto via API de LLM com prompt parametrizado pelos dados do mês (sem fine-tuning na Sprint 02), com template de fallback determinístico.
-- *Dados*: saídas já consolidadas das duas abordagens anteriores, mais totais de fatura.
-- *Impacto*: menos tempo interpretando dados brutos; maior adesão de administradoras que hoje evitam soluções "complexas demais".
-
-### 5.5 Aprofundamento escolhido — Opção C: Esquema da Base de Dados
-
-Desenhado para sustentar rateio (5.3) e IA (5.4) ao mesmo tempo, já prevendo as necessidades de histórico da Sprint 02.
+**Esquema de dados (Opção C):**
 
 ```mermaid
 erDiagram
@@ -290,196 +178,194 @@ erDiagram
     SESSAO_RECARGA }o--|| FATURA : compoe
     FATURA ||--o{ ITEM_FATURA : detalha
     SESSAO_RECARGA ||--o| ANOMALIA : pode_gerar
-
-    UNIDADE {
-        uuid id
-        string identificacao
-        float fracao_ideal
-    }
-    USUARIO {
-        uuid id
-        uuid unidade_id
-        string nome
-        string papel
-    }
-    CARTAO_RFID {
-        uuid id
-        uuid usuario_id
-        string uid_fisico
-        string status
-    }
-    PONTO_RECARGA {
-        uuid id
-        string modelo_equipamento
-        int potencia_nominal_kw
-        string protocolo_conectividade
-    }
-    SESSAO_RECARGA {
-        uuid id
-        uuid usuario_id
-        uuid cartao_id
-        uuid ponto_id
-        datetime inicio
-        datetime fim
-        float kwh_inicial
-        float kwh_final
-        string status_encerramento
-    }
-    EVENTO_TELEMETRIA {
-        uuid id
-        uuid sessao_id
-        datetime timestamp
-        float potencia_kw
-        float energia_acumulada_kwh
-    }
-    ANOMALIA {
-        uuid id
-        uuid sessao_id
-        string tipo
-        float score
-        string status_revisao
-    }
-    FATURA {
-        uuid id
-        uuid unidade_id
-        string mes_referencia
-        float componente_variavel
-        float componente_fixo
-        float total
-    }
-    ITEM_FATURA {
-        uuid id
-        uuid fatura_id
-        uuid sessao_id
-        float kwh_atribuido
-        float valor
-    }
 ```
 
-**Registro simulado — sessão de recarga:**
+---
 
-```json
-{
-  "id": "f3a1c2e0-91d4-4b2e-9a7f-2e1c8d4f0a11",
-  "usuario_id": "9c2b1e44-0a3d-4f7a-bf2e-1d8c5a6e9201",
-  "cartao_id": "7d4e2a19-8b3c-4f1e-9a0d-3c2b1e445566",
-  "ponto_id": "a1b2c3d4-e5f6-4789-90ab-cdef01234567",
-  "inicio": "2026-06-10T19:42:11Z",
-  "fim": "2026-06-10T23:58:47Z",
-  "kwh_inicial": 1042.7,
-  "kwh_final": 1054.3,
-  "status_encerramento": "concluida_normal"
-}
+## 4. Sprint 02 — Protótipo Funcional
+
+### 4.1 Como Executar
+
+**Pré-requisito:** Python 3.11+
+
+```bash
+# 1. Clone o repositório e instale as dependências
+git clone https://github.com/PedroSales-dev/Challenge-GOODWE.git
+cd Challenge-GOODWE
+pip install -r requirements.txt
+
+# 2. (Opcional) Execute o backend FastAPI
+uvicorn backend.main:app --reload --port 8000
+# Documentação interativa: http://localhost:8000/docs
+
+# 3. (Opcional) Abra o dashboard
+# Abra frontend/index.html no navegador (requer o backend rodando)
+
+# 4. Execute a demonstração completa no notebook
+jupyter notebook ev_chargeops_demo.ipynb
+# Execute todas as células em ordem (Kernel > Restart & Run All)
 ```
 
-**Registro simulado — anomalia detectada:**
-
-```json
-{
-  "id": "0e4f9a22-7c1b-4d5e-bb3a-9f0e1c2d3456",
-  "sessao_id": "f3a1c2e0-91d4-4b2e-9a7f-2e1c8d4f0a11",
-  "tipo": "consumo_acima_do_padrao_historico",
-  "score": 0.87,
-  "status_revisao": "pendente"
-}
-```
-
-Esquema a ser implementado em PostgreSQL na Sprint 02, com TimescaleDB avaliado para `EVENTO_TELEMETRIA`, dado seu padrão de escrita intensiva em série temporal.
-
 ---
 
-## 6. Plano para a Sprint 02
-
-Quatro blocos sequenciais, cada um com incremento testável, prazo 20/09/2026:
-
-| Bloco | Entregável | Tecnologias | Critério de pronto |
-|---|---|---|---|
-| **1. Fundação de dados** | Banco conforme o esquema da Seção 5.5; simulador de eventos baseado no dataset Kaggle *Electric Vehicle Charging Sessions* e em dados reais do HCA G2 do Lab FIAP, quando disponíveis | PostgreSQL + TimescaleDB, Python | Banco com 90+ dias de sessões simuladas e/ou reais, consultável |
-| **2. Motor de rateio (RHPS)** | API que calcula a fatura mensal por unidade, com os três casos excepcionais tratados | Python + FastAPI, pytest | Testes dos três casos excepcionais passando; fatura correta para um mês simulado |
-| **3. Camada Aura (IA)** | Modelos de previsão de demanda e detecção de anomalias; integração de LLM para o Boletim Energético Inteligente | scikit-learn, Prophet/statsmodels, API de LLM | Modelo identifica outliers injetados artificialmente; boletim gerado para um mês de teste |
-| **4. Interfaces e integração** | Painel do gestor e visão do morador; gateway com a API GoodWe SEMS (sandbox, já que produção exige credenciamento comercial) e mock de servidor OCPP | React + Tailwind, Recharts, biblioteca `ocpp` (Python) | Fluxo ponta a ponta demonstrável: sessão → fatura → boletim → painel |
-
-**Ordem e racional.** Dados primeiro, porque rateio e IA dependem de um modelo estável. Rateio antes da IA, porque a detecção de anomalias precisa de um cálculo de referência para comparar. Interfaces por último, porque consomem as APIs anteriores. A integração com o hardware físico do Lab FIAP é perseguida ao longo de toda a sprint, condicionada ao credenciamento da API GoodWe — se não for viabilizada a tempo, o pitch final roda sobre o simulador, sem prejuízo da avaliação do raciocínio arquitetônico, que o próprio playbook define como foco da banca.
-
----
-
-## 7. Riscos, Premissas e Limites de Escopo
-
-| Item | Natureza | Tratamento adotado |
-|---|---|---|
-| Acesso de produção à API GoodWe SEMS depende de credenciamento comercial | Risco externo | Sprint 02 desenvolve sobre simulador com schema idêntico ao real, trocável sem refatoração |
-| IT-41 (Corpo de Bombeiros) ainda em consulta pública | Risco regulatório, fora de controle | Conformidade tratada como metadado auditável, não requisito de software; revisão acompanhada até a Sprint 02 |
-| Tarifa horária (branca) não é universal entre distribuidoras | Premissa de simplificação | Rateio inicial assume tarifa única; dado já suporta tarifa por horário para evolução futura |
-| Detecção de anomalias com poucos dados reais gera falsos positivos | Risco técnico de IA | Treino inicial em dataset público (Kaggle) + outliers injetados artificialmente para validação |
-| Geração de linguagem natural via LLM externo depende de terceiro | Risco de arquitetura | Template determinístico de fallback garante boletim sempre disponível, só menos elaborado |
-
----
-
-## 8. Stack Tecnológica Resumida
-
-| Camada | Tecnologia | Justificativa |
-|---|---|---|
-| Backend / API | Python + FastAPI | Documentação automática (OpenAPI), produtividade adequada ao prazo |
-| Banco de dados | PostgreSQL + TimescaleDB | Modelo relacional + extensão otimizada para série temporal |
-| IA / Machine Learning | scikit-learn, Prophet/statsmodels | Bibliotecas maduras para previsão e detecção de anomalias |
-| Conectividade com hardware | Biblioteca `ocpp` (Python), `pymodbus` | Implementações abertas e testadas dos dois protocolos exigidos |
-| Frontend | React + Tailwind CSS + Recharts | Produtividade de UI e visualização de série temporal |
-| Integrações externas | API GoodWe SEMS (OpenAPI), Open Charge Map API | Telemetria e contexto geográfico de recarga |
-| Infraestrutura | Docker / Docker Compose | Ambiente reprodutível entre equipe e banca |
-
----
-
-## 9. Estrutura do Repositório
+### 4.2 Estrutura do Repositório
 
 ```
 Challenge-GOODWE/
-├── README.md                                  ← este documento
-└── docs/
-    └── diagrams/
-        └── arquitetura-evchargeops.svg        ← diagrama referenciado na Seção 5.1
+│
+├── ev_chargeops/                  ← Pacote principal
+│   ├── __init__.py
+│   ├── database.py                ← Configuração SQLAlchemy / SQLite
+│   ├── models.py                  ← Modelos ORM (9 entidades)
+│   ├── simulador.py               ← Gerador de dados sintéticos (90 dias)
+│   ├── rateio.py                  ← Motor RHPS
+│   └── ia/
+│       ├── __init__.py
+│       ├── anomalias.py           ← Isolation Forest
+│       ├── previsao.py            ← Holt-Winters (séries temporais)
+│       └── boletim.py             ← Boletim Energético Inteligente
+│
+├── backend/
+│   ├── __init__.py
+│   └── main.py                    ← API FastAPI (sessões, faturas, Aura)
+│
+├── frontend/
+│   └── index.html                 ← Dashboard single-file (Chart.js)
+│
+├── docs/
+│   └── diagrams/
+│       ├── arquitetura-evchargeops.svg
+│       ├── perfil_uso.png         ← gerado pelo notebook
+│       ├── faturamento_junho.png  ← gerado pelo notebook
+│       ├── anomalias_scatter.png  ← gerado pelo notebook
+│       └── previsao_demanda.png   ← gerado pelo notebook
+│
+├── ev_chargeops_demo.ipynb        ← Demonstração executável (evidência)
+├── gerar_notebook.py              ← Script gerador do notebook
+├── requirements.txt
+└── README.md
 ```
-
-Expandida na Sprint 02 com `backend/`, `frontend/`, `ia/` e `infra/`, conforme os blocos da Seção 6.
 
 ---
 
-## 10. Referências
+### 4.3 Lógica Central — Motor RHPS
 
-Todas as fontes abaixo foram efetivamente consultadas.
+O motor de rateio (`ev_chargeops/rateio.py`) implementa a fórmula RHPS definida na Sprint 01. A função principal é `calcular_todas_as_faturas(db, mes_referencia)`, que percorre todas as unidades cadastradas, agrega o consumo de todos os cartões RFID vinculados a ela e gera uma fatura com detalhamento por sessão (tabela `ITEM_FATURA`), garantindo auditoria completa.
+
+**Resultado do teste de integração (junho/2026, dados simulados):**
+
+| Unidade | kWh | Variável (R$) | Fixo (R$) | Total (R$) |
+|---|---|---|---|---|
+| Ap. 101 | ~165 | ~117,02 | 65,00 | ~182,02 |
+| Ap. 102 | ~232 | ~164,64 | 57,50 | ~222,14 |
+| Ap. 103 | ~120 | ~85,14 | 55,00 | ~140,14 |
+| *(demais 7 unidades)* | ... | ... | ... | ... |
+| **Total** | **~1.001 kWh** | — | — | **~R$ 1.209** |
+
+Os três casos excepcionais são validados no notebook (Bloco 7): sessão interrompida, unidade sem recarga e múltiplos cartões por unidade.
+
+---
+
+### 4.4 Módulo de IA — Aura
+
+**`ev_chargeops/ia/anomalias.py`** — treina um `IsolationForest` (scikit-learn, `contamination=0.04`, 200 estimadores) sobre as features `kwh_consumido`, `duracao_horas`, `potencia_media_kw` e `hora_inicio`. O score é normalizado para 0–1 e as anomalias são classificadas por tipo (consumo muito alto, duração alta com kWh baixo, potência instantânea inconsistente). Resultado: 5 das sessões injetadas deliberadamente com padrão anômalo foram detectadas com scores acima de 0,87.
+
+**`ev_chargeops/ia/previsao.py`** — agrega o consumo diário total e treina um modelo `ExponentialSmoothing` com tendência aditiva e sazonalidade semanal (período 7). Produz previsão com intervalo de confiança de 95% via desvio padrão dos resíduos.
+
+**`ev_chargeops/ia/boletim.py`** — gera um relatório em Markdown a partir de dados estruturados. A engine é por template (sem dependência de LLM externo), garantindo disponibilidade total no protótipo. A interface da função é desenhada para que a engine seja trocada por uma chamada de LLM sem alterar nenhum outro módulo.
+
+---
+
+### 4.5 API REST — FastAPI
+
+O arquivo `backend/main.py` expõe os seguintes endpoints:
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/sessoes/iniciar` | Inicia sessão via UID RFID (equivale a `StartTransaction`) |
+| `POST` | `/sessoes/{id}/encerrar` | Encerra sessão com leitura final do medidor |
+| `GET` | `/sessoes` | Lista sessões com filtros por mês e unidade |
+| `POST` | `/faturas/calcular/{mes}` | Calcula faturas de todas as unidades do mês |
+| `GET` | `/faturas/{mes}` | Retorna faturas calculadas |
+| `POST` | `/ia/anomalias/{mes}` | Executa detecção de anomalias sobre o mês |
+| `GET` | `/ia/previsao` | Projeta demanda dos próximos N dias |
+| `GET` | `/ia/boletim/{mes}` | Gera e retorna o Boletim Energético Inteligente |
+
+Com o backend rodando, a documentação interativa (Swagger UI) fica em `http://localhost:8000/docs`.
+
+---
+
+### 4.6 Dashboard — Frontend
+
+`frontend/index.html` é um arquivo HTML único (sem build) que consome a API local. Exibe:
+- Quatro métricas em cards: kWh do mês, total faturado, sessões registradas, anomalias pendentes
+- Gráfico de barras: fatura por unidade (Chart.js)
+- Gráfico de linhas com IC: previsão de demanda 30 dias
+- Tabela de anomalias com score e tipo
+- Botão "Gerar Boletim" que chama `/ia/boletim/{mes}` e renderiza o resultado
+
+---
+
+### 4.7 Evidências de Funcionamento
+
+O notebook `ev_chargeops_demo.ipynb` é a evidência principal. Execute com `jupyter notebook ev_chargeops_demo.ipynb` e rode todas as células em ordem. Os gráficos gerados são salvos automaticamente em `docs/diagrams/`.
+
+| Componente | Resultado do teste de integração |
+|---|---|
+| Banco de dados (SQLite) | 9 tabelas criadas; 10 unidades, 314 sessões, 3.000+ eventos persistidos |
+| Simulador | 90 dias, 10 unidades, 3 pontos HCA G2; 5 anomalias injetadas |
+| Motor RHPS | 10 faturas calculadas; 3 casos excepcionais validados no Bloco 7 |
+| Aura — Anomalias | 13 sessões detectadas; as 5 injetadas com score ≥ 0,87 |
+| Aura — Previsão | 30 dias projetados; média 34,6 kWh/dia |
+| Aura — Boletim | 47 linhas geradas automaticamente em linguagem natural |
+| API FastAPI | Inicializa sem erros; documentação em `/docs` |
+| Dashboard | Consome a API e renderiza gráficos e tabelas |
+
+---
+
+### 4.8 Desvios em Relação à Sprint 01
+
+| Decisão Sprint 01 | Implementado Sprint 02 | Justificativa |
+|---|---|---|
+| PostgreSQL + TimescaleDB | SQLite | Elimina dependência de container externo; a troca é feita em uma única linha em `database.py` (`DATABASE_URL`) |
+| Acesso à API GoodWe SEMS real | Simulador com schema idêntico | Credenciamento de produção depende de acordo comercial com a GoodWe; o simulador gera dados com a mesma estrutura de payload documentada na Sprint 01 |
+| LLM via API para o boletim | Templates parametrizados | Garante disponibilidade e reprodutibilidade; interface mantida para substituição futura |
+| Frontend React | HTML/JS puro (single-file) | Elimina build step; funcionalidade equivalente no escopo do protótipo |
+
+---
+
+## 5. Referências
 
 **Regulação e legislação**
-- ANEEL. *Resolução Normativa nº 1.000, de 7 de dezembro de 2021.* https://www2.aneel.gov.br/cedoc/ren20211000.html
+- ANEEL. *Resolução Normativa nº 1.000/2021.* https://www2.aneel.gov.br/cedoc/ren20211000.html
 - ANEEL. *Veículos Elétricos.* https://www.gov.br/aneel/pt-br/assuntos/veiculos-eletricos
-- SECOVI-SP. *Corpo de Bombeiros publica novas Portarias para segurança em garagens com veículos elétricos.* https://secovi.com.br/corpo-de-bombeiros-publica-novas-portarias-para-seguranca-em-garagens-com-veiculos-eletricos/
-- Lello Condomínios. *Veículos elétricos em condomínios: normas e instalação.* https://www.lellocondominios.com.br/veiculos-eletricos-em-condominios-o-que-diz-a-legislacao-como-instalar-e-quais-cuidados-os-sindicos-precisam-ter/
-- Migalhas. *Carregadores de veículos em condomínios e a nova lei de SP.* https://www.migalhas.com.br/depeso/450429/carregadores-de-veiculos-em-condominios-e-a-nova-lei-de-sp
-- Diário Oficial do Estado de São Paulo. *Portarias CCB-008/800/2025 e CCB-009/800/2025.* https://cbaplang.corpodebombeiros.sp.gov.br/Midias/638986232326891879.pdf
-- ABVE. *Bombeiros esclarecem: estações de recarga corretamente instaladas não comprometem emissão do AVCB.* https://abve.org.br/bombeiros-de-sp-esclarecem-estacoes-de-recarga-corretamente-instaladas-em-edificios-nao-comprometem-emissao-do-avcb/
+- SECOVI-SP. *Corpo de Bombeiros publica novas Portarias.* https://secovi.com.br/corpo-de-bombeiros-publica-novas-portarias-para-seguranca-em-garagens-com-veiculos-eletricos/
+- Migalhas. *Carregadores em condomínios e a nova lei de SP.* https://www.migalhas.com.br/depeso/450429/carregadores-de-veiculos-em-condominios-e-a-nova-lei-de-sp
+- CBSP. *Portarias CCB-008/800/2025 e CCB-009/800/2025.* https://cbaplang.corpodebombeiros.sp.gov.br/Midias/638986232326891879.pdf
 
-**Mercado e frota de veículos elétricos**
-- ABVE. *Eletrificados crescem dez vezes mais do que o conjunto do mercado, e vendas chegam a 224 mil veículos em 2025.* https://abve.org.br/eletrificados-crescem-dez-vezes-mais-do-que-conjunto-do-mercado-em-2025-com-224-mil-veiculos-vendidos/
-- SMABC. *Frota de eletrificados no Brasil se aproxima dos 650 mil veículos.* https://smabc.org.br/frota-de-eletrificados-no-brasil-se-aproxima-dos-650-mil-veiculos/
+**Mercado e frota**
+- ABVE. *Eletrificados crescem dez vezes mais — 224 mil veículos em 2025.* https://abve.org.br/eletrificados-crescem-dez-vezes-mais-do-que-conjunto-do-mercado-em-2025-com-224-mil-veiculos-vendidos/
+- SMABC. *Frota de eletrificados se aproxima dos 650 mil veículos.* https://smabc.org.br/frota-de-eletrificados-no-brasil-se-aproxima-dos-650-mil-veiculos/
 
 **Carregador e API GoodWe**
-- GoodWe. *Datasheet HCA G2 Series EV Charger.* https://en.goodwe.com/Ftp/EN/Downloads/Datasheet/GW_HCA-G2_Datasheet-EN.pdf
-- GoodWe. *User Manual AC Charger HCA Series (7–22 kW) G2.* https://www.mg-solar-shop.com/media/pdf/1c/ed/c9/user_manual_goodwe_hca_g2_v1.pdf
+- GoodWe. *Datasheet HCA G2.* https://en.goodwe.com/Ftp/EN/Downloads/Datasheet/GW_HCA-G2_Datasheet-EN.pdf
+- GoodWe. *User Manual HCA Series G2.* https://www.mg-solar-shop.com/media/pdf/1c/ed/c9/user_manual_goodwe_hca_g2_v1.pdf
 - GoodWe Community. *API Introduction.* https://community.goodwe.com/solution/API%20introduction
-- GoodWe Community. *GoodWe API Technical Document.* https://community.goodwe.com/static/images/2024-08-20597794.pdf
-- Karunanayake, B. *Accessing GoodWe Sems Portal API: A Comprehensive Guide.* Medium. https://binodmx.medium.com/accessing-the-goodwe-sems-portal-api-a-comprehensive-guide-296e0431c285
+- GoodWe Community. *API Technical Document.* https://community.goodwe.com/static/images/2024-08-20597794.pdf
+- Karunanayake, B. *Accessing GoodWe SEMS Portal API.* https://binodmx.medium.com/accessing-the-goodwe-sems-portal-api-a-comprehensive-guide-296e0431c285
 
 **APIs complementares**
 - Open Charge Map. *API Documentation.* https://www.openchargemap.org/develop/api
-- OpenPublicAPIs. *Open Charge Map.* https://openpublicapis.com/api/open-charge-map
 
-**Soluções de mercado analisadas**
-- Power2Go. *Recarga de Carros Elétricos.* https://www.power2go.com.br/recarga-de-carros-eletricos
-- WEG Digital & Sistemas. *Cobrança automática para carregadores de veículos elétricos em condomínios.* https://www.weg.net/digital/blog/gateway-de-pagamento-para-carregadores-veiculos-eletricos-condominios/
-- Wallbox. *Pulsar Plus EV Charger.* https://wallbox.com/en_us/pulsar-plus-ev-charger
-- NeoCharge. *Estação de Recarga Veículo Elétrico.* https://www.neocharge.com.br/tudo-sobre/carregador-carro-eletrico/estacao-recarga-veiculo-eletrico
-- ChaZeMo. *Carregador Veículo Elétrico (Zaptec).* https://www.chazemo.com/
+**Soluções analisadas**
+- Power2Go. https://www.power2go.com.br/recarga-de-carros-eletricos
+- WEG Digital. https://www.weg.net/digital/blog/gateway-de-pagamento-para-carregadores-veiculos-eletricos-condominios/
+- Wallbox. https://wallbox.com/en_us/pulsar-plus-ev-charger
+- NeoCharge. https://www.neocharge.com.br/tudo-sobre/carregador-carro-eletrico/estacao-recarga-veiculo-eletrico
+- ChaZeMo (Zaptec). https://www.chazemo.com/
 
 **Material do desafio**
-- FIAP / GoodWe. *1CC — EV Challenge GoodWe FIAP 2026* (enunciado da Sprint 01) e *EV Challenge 2026 — Playbook Oficial*, materiais fornecidos pela coordenação do Enterprise Challenge 2026.
+- FIAP / GoodWe. *1CC — EV Challenge GoodWe FIAP 2026* — enunciados Sprint 01 e Sprint 02 e Playbook Oficial.
 
 ---
 

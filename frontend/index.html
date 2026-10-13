@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EV ChargeOps — Painel do Gestor</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.25rem; }
+    .badge-ok  { background:#052e16; color:#4ade80; border-radius:6px; padding:2px 8px; font-size:12px; }
+    .badge-warn{ background:#431407; color:#fb923c; border-radius:6px; padding:2px 8px; font-size:12px; }
+    .badge-err { background:#450a0a; color:#f87171; border-radius:6px; padding:2px 8px; font-size:12px; }
+    thead th { color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
+    tbody td { border-top: 1px solid #334155; }
+    .metric-value { font-size: 2rem; font-weight:700; color:#38bdf8; }
+    .metric-label { font-size: 0.78rem; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
+    #boletim-text { font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7;
+                    white-space: pre-wrap; color: #cbd5e1; }
+  </style>
+</head>
+<body class="min-h-screen p-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white">EV ChargeOps</h1>
+      <p class="text-sm text-slate-400">Energy Innovation Lab · FIAP/GoodWe · Estacionamento L1</p>
+    </div>
+    <div class="text-right">
+      <p class="text-xs text-slate-500">Mês de referência</p>
+      <input id="mes-input" type="month" value="2026-06"
+             class="mt-1 bg-slate-700 border border-slate-600 text-white rounded px-3 py-1 text-sm" />
+      <button onclick="carregarTudo()"
+              class="ml-2 bg-sky-600 hover:bg-sky-500 text-white text-sm px-4 py-1 rounded">
+        Atualizar
+      </button>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div id="status-bar" class="mb-6 text-xs text-slate-500 flex gap-3 items-center">
+    <span>⬤ <span id="api-status" class="text-yellow-400">Conectando à API...</span></span>
+    <span id="ultima-atualizacao"></span>
+  </div>
+
+  <!-- Metrics -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="card text-center">
+      <div class="metric-value" id="m-kwh">—</div>
+      <div class="metric-label">kWh no mês</div>
+    </div>
+    <div class="card text-center">
+      <div class="metric-value" id="m-total">—</div>
+      <div class="metric-label">Total faturado (R$)</div>
+    </div>
+    <div class="card text-center">
+      <div class="metric-value" id="m-sessoes">—</div>
+      <div class="metric-label">Sessões registradas</div>
+    </div>
+    <div class="card text-center">
+      <div class="metric-value text-orange-400" id="m-anomalias">—</div>
+      <div class="metric-label">Anomalias pendentes</div>
+    </div>
+  </div>
+
+  <!-- Charts + Table -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+    <!-- Faturamento por unidade -->
+    <div class="card">
+      <h2 class="text-sm font-semibold text-slate-300 mb-4">Faturamento por Unidade</h2>
+      <canvas id="chart-faturas" height="220"></canvas>
+    </div>
+
+    <!-- Previsão de demanda -->
+    <div class="card">
+      <h2 class="text-sm font-semibold text-slate-300 mb-4">Previsão de Demanda — Próximos 30 Dias</h2>
+      <canvas id="chart-previsao" height="220"></canvas>
+    </div>
+
+  </div>
+
+  <!-- Anomalias table -->
+  <div class="card mb-6">
+    <h2 class="text-sm font-semibold text-slate-300 mb-4">Sessões Anômalas — Revisão Pendente</h2>
+    <div id="anomalias-container">
+      <p class="text-slate-500 text-sm">Carregando...</p>
+    </div>
+  </div>
+
+  <!-- Boletim Energético -->
+  <div class="card mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-semibold text-slate-300">Boletim Energético Inteligente (Aura)</h2>
+      <button onclick="gerarBoletim()"
+              class="bg-violet-700 hover:bg-violet-600 text-white text-xs px-3 py-1 rounded">
+        Gerar Boletim
+      </button>
+    </div>
+    <div id="boletim-container">
+      <p class="text-slate-500 text-sm italic">Clique em "Gerar Boletim" para produzir o relatório mensal.</p>
+    </div>
+  </div>
+
+  <footer class="text-xs text-slate-600 text-center mt-4">
+    EV ChargeOps v0.1.0 · FIAP Enterprise Challenge 2026 · GoodWe Energy Innovation Lab
+    · Backend: <code>http://localhost:8000</code>
+  </footer>
+
+<script>
+const API = "http://localhost:8000";
+let chartFaturas = null;
+let chartPrevisao = null;
+
+async function api(path) {
+  try {
+    const r = await fetch(API + path);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch(e) {
+    console.error("API error:", path, e);
+    return null;
+  }
+}
+
+function mes() { return document.getElementById("mes-input").value; }
+
+async function carregarTudo() {
+  const m = mes();
+  document.getElementById("api-status").textContent = "Sincronizando...";
+  document.getElementById("api-status").className = "text-yellow-400";
+
+  await Promise.all([
+    carregarFaturas(m),
+    carregarSessoes(m),
+    carregarAnomalias(m),
+    carregarPrevisao(),
+  ]);
+
+  document.getElementById("ultima-atualizacao").textContent =
+    "Atualizado em " + new Date().toLocaleTimeString("pt-BR");
+  document.getElementById("api-status").textContent = "API conectada";
+  document.getElementById("api-status").className = "text-green-400";
+}
+
+async function carregarFaturas(m) {
+  const data = await api(`/faturas/${m}`);
+  if (!data) return;
+
+  const kwh_total = data.reduce((a, f) => a + (f.n_sessoes > 0 ? (f.componente_variavel / 0.7090) : 0), 0);
+  const total_geral = data.reduce((a, f) => a + f.total, 0);
+
+  document.getElementById("m-total").textContent = "R$ " + total_geral.toFixed(2);
+  document.getElementById("m-kwh").textContent = kwh_total.toFixed(0) + " kWh";
+
+  const labels = data.map(f => f.unidade);
+  const valores = data.map(f => f.total);
+
+  if (chartFaturas) chartFaturas.destroy();
+  chartFaturas = new Chart(document.getElementById("chart-faturas"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Total (R$)",
+        data: valores,
+        backgroundColor: "#38bdf880",
+        borderColor: "#38bdf8",
+        borderWidth: 1,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#94a3b8", font: { size: 10 } }, grid: { color: "#1e293b" } },
+        y: { ticks: { color: "#94a3b8" }, grid: { color: "#334155" } }
+      }
+    }
+  });
+}
+
+async function carregarSessoes(m) {
+  const data = await api(`/sessoes?mes=${m}`);
+  if (!data) return;
+  document.getElementById("m-sessoes").textContent = data.length;
+}
+
+async function carregarAnomalias(m) {
+  // Executa detecção e lista resultado
+  await api(`/ia/anomalias/${m}`);
+  const data = await api(`/ia/anomalias/${m}`);
+  if (!data) return;
+
+  document.getElementById("m-anomalias").textContent = data.total;
+
+  const container = document.getElementById("anomalias-container");
+  if (!data.anomalias || data.anomalias.length === 0) {
+    container.innerHTML = '<p class="text-green-400 text-sm">Nenhuma anomalia detectada.</p>';
+    return;
+  }
+
+  const rows = data.anomalias.map(a => `
+    <tr>
+      <td class="py-2 px-3 text-xs font-mono text-slate-400">${a.id.substring(0,8)}…</td>
+      <td class="py-2 px-3 text-xs">${a.tipo.replace(/_/g, " ")}</td>
+      <td class="py-2 px-3 text-xs text-right">${a.kwh_consumido?.toFixed(1) ?? "—"}</td>
+      <td class="py-2 px-3 text-xs text-right">${a.duracao_horas?.toFixed(1) ?? "—"}h</td>
+      <td class="py-2 px-3 text-xs text-right">
+        <span class="${a.score_normalizado > 0.8 ? 'badge-err' : 'badge-warn'}">
+          ${(a.score_normalizado * 100).toFixed(0)}%
+        </span>
+      </td>
+      <td class="py-2 px-3 text-xs"><span class="badge-warn">pendente</span></td>
+    </tr>`).join("");
+
+  container.innerHTML = `
+    <table class="w-full text-sm">
+      <thead><tr>
+        <th class="text-left py-2 px-3">ID Sessão</th>
+        <th class="text-left py-2 px-3">Tipo</th>
+        <th class="text-right py-2 px-3">kWh</th>
+        <th class="text-right py-2 px-3">Duração</th>
+        <th class="text-right py-2 px-3">Score</th>
+        <th class="text-left py-2 px-3">Status</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function carregarPrevisao() {
+  const data = await api("/ia/previsao?horizonte=30");
+  if (!data || !data.previsao.length) return;
+
+  const labels = data.previsao.map(d => d.data.substring(5)); // MM-DD
+  const valores = data.previsao.map(d => d.kwh_previsto);
+  const inf = data.previsao.map(d => d.intervalo_inferior);
+  const sup = data.previsao.map(d => d.intervalo_superior);
+
+  if (chartPrevisao) chartPrevisao.destroy();
+  chartPrevisao = new Chart(document.getElementById("chart-previsao"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        { label: "kWh previsto", data: valores, borderColor: "#a78bfa", borderWidth: 2,
+          fill: false, pointRadius: 0 },
+        { label: "Intervalo sup.", data: sup, borderColor: "#a78bfa30", borderWidth: 0,
+          fill: "+1", backgroundColor: "#a78bfa15", pointRadius: 0 },
+        { label: "Intervalo inf.", data: inf, borderColor: "#a78bfa30", borderWidth: 0,
+          fill: false, pointRadius: 0 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: "#94a3b8", font: { size: 10 } } } },
+      scales: {
+        x: { ticks: { color: "#94a3b8", font: { size: 9 }, maxTicksLimit: 8 },
+             grid: { color: "#1e293b" } },
+        y: { ticks: { color: "#94a3b8" }, grid: { color: "#334155" } }
+      }
+    }
+  });
+}
+
+async function gerarBoletim() {
+  const m = mes();
+  const container = document.getElementById("boletim-container");
+  container.innerHTML = '<p class="text-slate-500 text-sm italic">Gerando boletim...</p>';
+  const data = await api(`/ia/boletim/${m}`);
+  if (!data || !data.boletim) {
+    container.innerHTML = '<p class="text-red-400 text-sm">Erro ao gerar boletim. Verifique se as faturas foram calculadas.</p>';
+    return;
+  }
+  container.innerHTML = `<pre id="boletim-text">${data.boletim}</pre>`;
+}
+
+// Inicializa
+window.addEventListener("load", carregarTudo);
+</script>
+</body>
+</html>
